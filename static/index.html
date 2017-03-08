@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+	<head>
+
+		<style>
+		.speech {
+			float: left;
+		}
+
+		.text {
+			float: right;
+		}
+		</style>
+
+	</head>
+	<body>
+
+		<div id="app">
+			<p class="speech">{{speech}}</p>
+			<p class="text">{{text}}</p>
+		</div>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.2.1/vue.min.js"></script>
+
+		<script>
+		const socket = io(location.origin);
+
+		const app = new Vue({
+			el: "#app",
+			data: {
+				speech: "",
+				text: ""
+			}
+		});
+
+		socket.on("text", text => app.text = text);
+
+		const recognition = new webkitSpeechRecognition();
+
+		recognition.continuous = true;
+		recognition.interimResults = true;
+
+		recognition.onresult = e => {
+			app.speech = [...e.results].map(r => r[0].transcript).join(" ");
+			socket.emit("speech", app.speech);
+		}
+
+		recognition.start();
+		</script>
+
+	</body>
+</html>
